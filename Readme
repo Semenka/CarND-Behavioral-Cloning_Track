@@ -1,0 +1,75 @@
+Initial idea of used CNN has been taken from NVIDIA paper. The same structure of CNN was used with following detailed structure and layers:
+1) Convolutional layer 32x32x24.
+2) Colvolutional layer 16x16x36. Dpropout (0.3) and Pooling was used for regularization.
+3) Colvolutional layer 6x6x48. Dpropout (0.3) was used for regularization.
+4) Colvolutional layer 4x4x64. Dpropout (0.2) was used for regularization.
+5) Flattering layer 
+6) Dense layer 1164
+7) Dense layer 100
+8) Dense layer 50
+9) Dense layer 1
+Adam optimizer was used (inspired by Traffic Sign Classification Project). Reasons behind selection of Adam optimizer are explained in details in previous project report. 
+
+Dataset consist of 77530 images with different images from different cameras (center, left, right). Augmentation of brightness, crop, adjustment in case of left/right camera and resizing to 64*64 size was applied. Initally I've started train the model from inital 8000 images from 3 cameras, but only after increase of dataset size I've reached the proper selfdriving ability.
+
+Data were divided to training/testing data set with ration 0.75 (0.6-0.8 ratios were investigated). Training batch size 256 was used for final model (32,64,128,512 were tried). 5 epochs were used fot final model (I've increased the number of epochs up to 50 but it causes overoptimization after 30). Initially I've tried to use 2 outouts fromt he model: steering angle and throttle size. But the accuracy was not comparable with steering angle only output. Difficult situation for the model could happens ont he offroad part of the track (the model was intentionally trained to choice this path), in case of touching tyres (considered not dangerous for passenger), you could push revers and model will amnage to find the way out.
+
+Final model training log with details is below:
+____________________________________________________________________________________________________
+Layer (type)                     Output Shape          Param #     Connected to                     
+====================================================================================================
+convolution2d_1 (Convolution2D)  (None, 32, 32, 24)    1824        convolution2d_input_1[0][0]      
+____________________________________________________________________________________________________
+elu_1 (ELU)                      (None, 32, 32, 24)    0           convolution2d_1[0][0]            
+____________________________________________________________________________________________________
+convolution2d_2 (Convolution2D)  (None, 16, 16, 36)    21636       elu_1[0][0]                      
+____________________________________________________________________________________________________
+elu_2 (ELU)                      (None, 16, 16, 36)    0           convolution2d_2[0][0]            
+____________________________________________________________________________________________________
+dropout_1 (Dropout)              (None, 16, 16, 36)    0           elu_2[0][0]                      
+____________________________________________________________________________________________________
+maxpooling2d_1 (MaxPooling2D)    (None, 8, 8, 36)      0           dropout_1[0][0]                  
+____________________________________________________________________________________________________
+convolution2d_3 (Convolution2D)  (None, 6, 6, 48)      15600       maxpooling2d_1[0][0]             
+____________________________________________________________________________________________________
+elu_3 (ELU)                      (None, 6, 6, 48)      0           convolution2d_3[0][0]            
+____________________________________________________________________________________________________
+dropout_2 (Dropout)              (None, 6, 6, 48)      0           elu_3[0][0]                      
+____________________________________________________________________________________________________
+convolution2d_4 (Convolution2D)  (None, 4, 4, 64)      27712       dropout_2[0][0]                  
+____________________________________________________________________________________________________
+elu_4 (ELU)                      (None, 4, 4, 64)      0           convolution2d_4[0][0]            
+____________________________________________________________________________________________________
+dropout_3 (Dropout)              (None, 4, 4, 64)      0           elu_4[0][0]                      
+____________________________________________________________________________________________________
+flatten_1 (Flatten)              (None, 1024)          0           dropout_3[0][0]                  
+____________________________________________________________________________________________________
+dense_1 (Dense)                  (None, 1164)          1193100     flatten_1[0][0]                  
+____________________________________________________________________________________________________
+elu_5 (ELU)                      (None, 1164)          0           dense_1[0][0]                    
+____________________________________________________________________________________________________
+dense_2 (Dense)                  (None, 100)           116500      elu_5[0][0]                      
+____________________________________________________________________________________________________
+elu_6 (ELU)                      (None, 100)           0           dense_2[0][0]                    
+____________________________________________________________________________________________________
+dense_3 (Dense)                  (None, 50)            5050        elu_6[0][0]                      
+____________________________________________________________________________________________________
+elu_7 (ELU)                      (None, 50)            0           dense_3[0][0]                    
+____________________________________________________________________________________________________
+dense_4 (Dense)                  (None, 1)             51          elu_7[0][0]                      
+====================================================================================================
+Total params: 1,381,473
+Trainable params: 1,381,473
+Non-trainable params: 0
+____________________________________________________________________________________________________
+Epoch 1/5
+77312/77312 [==============================] - 799s - loss: 0.0339 - val_loss: 2.8290e-05
+Epoch 2/5
+77312/77312 [==============================] - 753s - loss: 0.0172 - val_loss: 8.5836e-05
+Epoch 3/5
+77312/77312 [==============================] - 794s - loss: 0.0157 - val_loss: 2.8790e-04
+Epoch 4/5
+77312/77312 [==============================] - 797s - loss: 0.0145 - val_loss: 6.6669e-04
+Epoch 5/5
+77312/77312 [==============================] - 788s - loss: 0.0138 - val_loss: 1.3098e-04
+Saving model weights and configuration file.
